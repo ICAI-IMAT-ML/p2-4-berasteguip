@@ -34,10 +34,12 @@ class LinearRegressor:
         Returns:
             None: Modifies the model's coefficients and intercept in-place.
         """
+
         if method not in ["least_squares", "gradient_descent"]:
             raise ValueError(
                 f"Method {method} not available for training linear regression."
             )
+        
         if np.ndim(X) == 1:
             X = X.reshape(-1, 1)
 
@@ -67,8 +69,14 @@ class LinearRegressor:
         # Replace this code with the code you did in the previous laboratory session
 
         # Store the intercept and the coefficients of the model
-        self.intercept = None
-        self.coefficients = None
+        
+        # X = np.c_[np.ones(X.shape[0]), X]
+        Xt = np.transpose(X)
+
+        beta = np.linalg.inv(Xt @ X) @ Xt @ y
+
+        self.intercept = beta[0]
+        self.coefficients = beta[1:]
 
     def fit_gradient_descent(self, X, y, learning_rate=0.01, iterations=1000):
         """
