@@ -74,7 +74,6 @@ class LinearRegressor:
         Xt = np.transpose(X)
 
         beta = np.linalg.inv(Xt @ X) @ Xt @ y
-        print('Beta shape', beta.shape)
         self.intercept = beta[0]
         self.coefficients = beta[1:]
 
@@ -133,8 +132,6 @@ class LinearRegressor:
         if np.ndim(X) == 1:
             predictions = self.intercept + self.coefficients * X
         else:
-            print('Shape of X:', X.shape)
-            print('Shape of coefficients:', self.coefficients.shape)
             predictions = self.intercept + X @ self.coefficients
         return predictions
 
@@ -169,35 +166,28 @@ def evaluate_regression(y_true, y_pred):
 
 
 def one_hot_encode(X: np.ndarray, categorical_indices, drop_first=False):
-    """
-    One-hot encode the categorical columns specified in categorical_indices. This function
-    shall support string variables.
-
-    Args:
-        X (np.ndarray): 2D data array.
-        categorical_indices (list of int): Indices of columns to be one-hot encoded.
-        drop_first (bool): Whether to drop the first level of one-hot encoding to avoid multicollinearity.
-
-    Returns:
-        np.ndarray: Transformed array with one-hot encoded columns.
-    """
-    X_transformed = X.copy()
-    for index in sorted(categorical_indices, reverse=True):
+    X_transformed = X.copy().astype(object)
+    
+    # Procesar primero las columnas de mayor índice
+    for index in sorted(categorical_indices, reverse=False):
         
-        categorical_column = X_transformed[:, index]
-        
-        unique_values = np.unique(categorical_column)
+        col = X_transformed[:, index]
+        unique_vals = np.unique(col)
 
+        # Matriz dummy
         one_hot = []
-        for value in unique_values:
-            one_hot.append([1 if element == value else 0 for element in categorical_column])
+        for v in unique_vals:
+            one_hot.append([1 if elem == v else 0 for elem in col])
         one_hot = np.array(one_hot).T
-
-        # Optionally drop the first level of one-hot encoding
+        
+        # drop_first opcional
         if drop_first:
             one_hot = one_hot[:, 1:]
-
         
-        X_transformed = X_transformed
+        # 1) Borramos la columna categórica original
+        X_transformed = np.delete(X_transformed, index, axis=1)
+        
+        # 2) Concatenamos las dummies a la izquierda
+        X_transformed = np.hstack((one_hot, X_transformed))
 
     return X_transformed
