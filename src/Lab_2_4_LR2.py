@@ -92,7 +92,7 @@ class LinearRegressor:
             iterations (int): Number of iterations for gradient descent.
 
         Returns:
-            None: Modifies the model's coefficients and intercept in-place.
+            losses, intercepts, coefficients: in order to plot the progress made by gradient descent
         """
 
         # Initialize the parameters to very small values (close to 0)
@@ -147,8 +147,6 @@ class LinearRegressor:
         Raises:
             ValueError: If the model is not yet fitted.
         """
-
-        # Paste your code from last week
 
         if self.coefficients is None or self.intercept is None:
             raise ValueError("Model is not yet fitted")
