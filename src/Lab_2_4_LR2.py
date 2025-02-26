@@ -40,17 +40,21 @@ class LinearRegressor:
                 f"Method {method} not available for training linear regression."
             )
         
+        # Nos aseguramos de que X e y sean arrays de numpy
+        X = np.asarray(X, dtype=np.float64)
+        y = np.asarray(y, dtype=np.float64)
+
         if np.ndim(X) == 1:
             X = X.reshape(-1, 1)
 
         X_with_bias = np.insert(
             X, 0, 1, axis=1
-        )  # Adding a column of ones for intercept
+        )  # Columna para el intercepto (bias)
 
         if method == "least_squares":
             self.fit_multiple(X_with_bias, y)
         elif method == "gradient_descent":
-            self.fit_gradient_descent(X_with_bias, y, learning_rate, iterations)
+            return self.fit_gradient_descent(X_with_bias, y, learning_rate, iterations)     # Devuelve las listas de la Loss y del Gradiente
 
     def fit_multiple(self, X, y):
         """
@@ -98,17 +102,36 @@ class LinearRegressor:
         )  # Small random numbers
         self.intercept = np.random.rand() * 0.01
 
+        losses = []         # Histórico del error cuadrático medio
+        coefficients = []   # Histórico de w
+        intercepts = []     # Histórico de b
+
+
         for epoch in range(iterations):
+
             predictions = np.hstack([self.intercept, self.coefficients]) @ X.T
             error = predictions - y
 
+            # Con el valor del gradiente actualizamos el valor de nuestros regresores
             gradient = (2 / m) * X.T @ error
             self.intercept -= learning_rate * gradient[0]
             self.coefficients -= learning_rate * gradient[1:]
+            
+            # Almacenamos el intercepto y coeficiente de esta iteración
+            coefficients.append(self.coefficients.copy())
+            intercepts.append(self.intercept)
+
+            # Calculamos y almacenamos el valor del error cuadrático medio
+            mse = np.mean(error ** 2)
+            losses.append(mse)
 
             if epoch % 10 == 0:
-                mse = np.mean(error ** 2)
                 print(f"Epoch {epoch}: MSE = {mse}")
+
+        coefficients = np.array(coefficients).T
+
+        return losses, intercepts, coefficients
+    
 
     def predict(self, X):
         """
